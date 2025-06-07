@@ -81,7 +81,7 @@ echo "VITE_API_BASE_URL=http://localhost:8000" > .env
 ### **Analyze Page** (`/analyze/:id`)
 - **Document Summary**: AI-generated research paper summary
 - **Translation Widget**: Dropdown to translate summary inline
-- **Language Support**: 11 languages (Spanish, French, German, etc.)
+- **Language Support**: Multiple languages (Spanish, French, German, etc.)
 - **Toggle View**: Switch between original and translated content
 
 ### **Q&A Chat** (`/qa/:id`)
