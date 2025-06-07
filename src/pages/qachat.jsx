@@ -12,11 +12,26 @@ const QAPage = () => {
   const [fileInfo, setFileInfo] = useState(null);
   const [error, setError] = useState("");
   const chatEndRef = useRef(null);
-
   // Load initial file info
   useEffect(() => {
     const loadFileInfo = async () => {
       try {
+        // Check localStorage first
+        const savedFiles = localStorage.getItem('uploadedFiles');
+        if (savedFiles) {
+          const files = JSON.parse(savedFiles);
+          const currentFile = files.find(f => f.file_id === docId);
+          if (currentFile) {
+            setFileInfo({
+              name: currentFile.filename,
+              uploaded: new Date(currentFile.created_at).toLocaleDateString()
+            });
+            setLoading(prev => ({ ...prev, initial: false }));
+            return;
+          }
+        }
+
+        // Fallback to API if not in localStorage
         const { data } = await axios.get(`http://localhost:8000/api/file-info/${docId}`);
         setFileInfo({
           name: data.filename,
@@ -73,11 +88,10 @@ const QAPage = () => {
       setLoading(prev => ({ ...prev, qa: false }));
     }
   };
-
   if (loading.initial) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <FaSpinner className="animate-spin text-4xl text-blue-500" />
+        <FaSpinner className="animate-spin text-4xl text-blue-400" />
       </div>
     );
   }
@@ -89,20 +103,20 @@ const QAPage = () => {
           <h1 className="text-3xl font-bold">Document Q/A</h1>
           <button
             onClick={() => navigate(-1)}
-            className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md flex items-center gap-2"
+            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-md flex items-center gap-2 border border-gray-600"
           >
             <FaArrowLeft /> Back to Files
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-800/30 p-4 rounded-lg mb-6 border border-red-400">
+          <div className="bg-red-900/30 p-4 rounded-lg mb-6 border border-red-500">
             <p className="text-red-400">{error}</p>
           </div>
         )}
 
         {fileInfo && (
-          <div className="bg-gray-800 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4">
+          <div className="bg-gray-900 p-4 rounded-lg mb-6 grid grid-cols-2 gap-4 border border-gray-700">
             <div>
               <p className="text-gray-400 text-sm">Filename</p>
               <p className="truncate">{fileInfo.name}</p>
@@ -114,12 +128,14 @@ const QAPage = () => {
           </div>
         )}
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
-          <div className="h-[500px] overflow-y-auto bg-gray-900 p-4 rounded-lg mb-6">
+        <div className="bg-gray-900 p-6 rounded-lg shadow-xl border border-gray-700">
+          <div className="h-[500px] overflow-y-auto bg-gray-900 p-4 rounded-lg mb-6 border border-gray-700">
             {messages.map((msg, index) => (
               <div key={index} className={`mb-6 ${msg.type === "user" ? "text-right" : "text-left"}`}>
-                <div className={`inline-block max-w-[85%] p-4 rounded-lg ${
-                  msg.type === "user" ? "bg-blue-600" : "bg-gray-700"
+                <div className={`inline-block max-w-[85%] p-4 rounded-lg border ${
+                  msg.type === "user" 
+                    ? "bg-blue-600 border-blue-500" 
+                    : "bg-gray-800 border-gray-600"
                 }`}>
                   <p className="text-sm text-gray-300 mb-2">
                     {new Date(msg.timestamp).toLocaleTimeString()}
@@ -147,7 +163,7 @@ const QAPage = () => {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Ask a question about the document..."
-              className="bg-gray-900 text-white px-4 py-3 rounded-lg flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-900 text-white px-4 py-3 rounded-lg flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-700"
               disabled={loading.qa}
             />
             <button
